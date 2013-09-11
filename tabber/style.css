@@ -1,0 +1,41 @@
+html, body, #sidebar, #tabs {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  overflow: hidden;
+}
+
+#sidebar, #tabs {
+  position: absolute;
+  
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+}
+
+#sidebar {
+  right: auto;
+  width: 320px;
+}
+
+#tabs {
+  left: 320px;
+}
+
+iframe {
+  border-width: 0;
+}
+
+.ui-tabs .ui-tabs-panel {
+  padding: 0;
+}
+
+.ui-tabs .ui-tabs-nav li a {
+  padding: 2px 8px;
+}
+
+ #tabs li .ui-icon-close { float: left; margin: 0.4em 0.2em 0 0; cursor: pointer; }

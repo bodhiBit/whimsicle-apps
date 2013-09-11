@@ -1,0 +1,21 @@
+{
+  "editor": "aceEdit",
+  "filemanager": "fileMan",
+  "defaultApps": {
+    "txt": "textEdit",
+    "png": "browserView",
+    "gif": "browserView",
+    "jpg": "browserView",
+    "jpeg": "browserView",
+    "pdf": "browserView",
+    "m4v": "browserView",
+    "mp4": "browserView",
+    "webm": "browserView",
+    "ogv": "browserView",
+    "mp3": "browserView",
+    "ogg": "browserView"
+  },
+  "workspaces": {
+    "code": "[home]/code"
+  }
+}

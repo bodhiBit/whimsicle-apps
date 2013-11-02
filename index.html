@@ -8,7 +8,13 @@
     <h1>Starting up...</h1>
     <p>This shouldn't take long...</p>
     <script>
-      location.replace("tabber/index.html");
+      if (window.self === window.top) {
+        document.body.innerHTML = '<h1>Sorry..</h1>'+
+          '<p>These apps needs a shell to run in..</p><ul>'+
+          '<li><a href="https://github.com/bodhiBit/whimsicle.nw">whimsicle.nw</a></li></ul>';
+      } else {
+        location.replace("tabber/index.html"+location.hash);
+      }
     </script>
   </body>
 </html>

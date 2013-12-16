@@ -4,6 +4,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
 /*exported app*/
 var app = (function(){
   "use strict";
+  alert("fs.js is depricated! use whim.js instead..");
   var app = {
     config: {
       "editor": "textEdit",

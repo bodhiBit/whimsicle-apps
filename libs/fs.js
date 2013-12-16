@@ -3,6 +3,9 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
 /*exported fs*/
 var fs = (function(){
   "use strict";
+  alert("fs.js is depricated! use whim.js instead..");
+  return {};
+  
   var fs = {
     _callbacks: [ true ],
     

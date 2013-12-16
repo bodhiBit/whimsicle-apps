@@ -1,6 +1,7 @@
-/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true,
-undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:true, browser:true, jquery: true */
-/*global app, fs*/
+/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true,
+strict:true, undef:true, unused:true, curly:true, devel:true, indent:2,
+maxerr:50, newcap:true, browser:true, jquery:true */
+/*global whim*/
 (function(){
   "use strict";
 
@@ -9,10 +10,11 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
   var toggling = false;
   
   $(function() {
-    app.on("load", load);
+    whim.config.load();
+    whim.app.on("loaded", load);
     setTimeout(function(){
-      if (!app.file) {
-        app.load("/");
+      if (!whim.app.filePath) {
+        whim.app.load("/");
       }
     }, 1000);
   });
@@ -26,17 +28,16 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     return i;
   }
   
-  function load(path) {
+  function load(r) {
     branches = [];
-    $("#branch_"+getBranch(path)).html('<a href="javascript:gotoParent()">&uArr;</a> '+path);
-    window.toggleFolder(path);
-    app.setLoaded();
+    $("#branch_"+getBranch(whim.app.filePath)).html('<a href="javascript:gotoParent()">&uArr;</a> '+whim.app.filePath);
+    window.toggleFolder(whim.app.filePath);
   }
   
   window.openFile = function(path) {
     toggling = true;
     setTimeout(function() { toggling = false; }, 10);
-    app.openFile(path);
+    whim.app.openPath(path);
   }
   
   window.toggleFolder = function(path) {
@@ -48,7 +49,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     }
     if (dblClick === path) {
       setTimeout(function() {
-        app.load(path);
+        whim.app.load(path);
       }, 10);
     } else if ($("#branch_"+getBranch(path)+" ul").size()>0) {
       dblClick = path;
@@ -59,13 +60,13 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
       });
     } else {
       dblClick = path;
-      fs.listDir(path, ["-isDir", "extName", "lowerCaseName"], function(r) {
+      whim.fs.read(path, ["-isDir", "extName", "lowerCaseName"], function(r) {
         if (r.success) {
           var html = $("#branch_"+getBranch(path)).html() + "<ul>";
           var props, file;
           if (path === "/") {
-            for(var ws in app.config.workspaces) {
-              if (app.config.workspaces.hasOwnProperty(ws)) {
+            for(var ws in whim.config.get("workspaces")) {
+              if (whim.config.get("workspaces").hasOwnProperty(ws)) {
                 props = {
                   isDir: true,
                   name: "["+ws+"]"
@@ -101,7 +102,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
           });
         } else {
           dblClick = false;
-          fs.readTextFile(path, function(r){
+          whim.fs.read(path, "utf8", function(r){
             var html = $("#branch_"+getBranch(path)).html() + "<ul>";
             html += '<li id="branch_'+getBranch(path+file)+'"><pre></pre></li>';
             html += "</ul>";
@@ -115,11 +116,11 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
   };
   
   window.gotoParent = function() {
-    var f = app.file;
+    var f = whim.app.filePath;
     if (f.match(/\//g).length > 1) {
-      app.load(f.substr(0, f.substr(0, f.length-1).lastIndexOf("/")+1));
+      whim.app.load(f.substr(0, f.substr(0, f.length-1).lastIndexOf("/")+1));
     } else {
-      app.load("/");
+      whim.app.load("/");
     }
   }
 }());

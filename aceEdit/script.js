@@ -1,11 +1,12 @@
-/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true,
-undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:true, browser:true */
-/*global app, fs, ace*/
+/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true,
+strict:true, undef:true, unused:true, curly:true, devel:true, indent:2,
+maxerr:50, newcap:true, browser:true */
+/*global whim, ace*/
 (function(){
   "use strict";
   var editor,
-      modelist = ace.require("ace/ext/modelist"),
-      originalTxt = "";
+      undoFile,
+      modelist = ace.require("ace/ext/modelist");
   
   function main() {
     ace.require("ace/ext/language_tools");
@@ -30,47 +31,22 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     });
     
     editor.getSession().on("change", function(){
-      if ( editor.getValue() !== originalTxt) {
-        app.setModified();
-      } else {
-        app.setLoaded();
-      }
+      whim.app.editorContent = editor.getValue();
     });
-    app.on("load", load);
-    app.on("save", save);
+    whim.app.on("loaded", load);
+    whim.app.startFileWatcher();
   }
   document.addEventListener("DOMContentLoaded", main);
   
-  function load(file) {
-    editor.getSession().setMode(modelist.getModeForPath(file).mode);
-    fs.readTextFile(file, function(result){
-      if (result.success) {
-        editor.setValue(result.data);
-        originalTxt = editor.getValue();
-        editor.navigateFileStart();
-        app.setLoaded();
-        setTimeout(function() {
-          editor.getSession().getUndoManager().reset();
-        }, 10);
-      } else if (result.err.code === "EISDIR") {
-        app.on("open", function(url){
-          location.replace(url);
-        });
-        app.openFile(app.file+"/");
-      } else {
-        alert(result.status);
-      }
-    });
-  }
-  
-  function save() {
-    originalTxt = editor.getValue();
-    fs.writeTextFile(app.file, originalTxt, function(result){
-      if (result.success) {
-        app.setSaved();
-      } else {
-        alert(result.status);
-      }
-    });
+  function load(result) {
+    editor.getSession().setMode(modelist.getModeForPath(whim.app.filePath).mode);
+    editor.setValue(whim.app.editorContent);
+    editor.navigateFileStart();
+    if (undoFile !== whim.app.filePath) {
+      setTimeout(function() {
+        editor.getSession().getUndoManager().reset();
+      }, 10);
+      undoFile = whim.app.filePath;
+    }
   }
 }());

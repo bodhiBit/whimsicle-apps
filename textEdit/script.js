@@ -1,24 +1,18 @@
-/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true,
-undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:true, browser:true, jquery: true */
-/*global app, fs*/
+/*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true,
+strict:true, undef:true, unused:true, curly:true, devel:true, indent:2,
+maxerr:50, newcap:true, browser:true, jquery:true */
+/*global whim*/
 (function(){
   "use strict";
-  var originalTxt = "";
-  
+
   $(function() {
-    app.on("load", load);
-    app.on("save", save);
+    whim.app.on("loaded", load);
     $("textarea").keydown(function(e){
       if (e.which === 9) {
         e.preventDefault();
       }
     });
     $("textarea").keyup(function(e){
-      if ($("textarea").val() !== originalTxt) {
-        app.setModified();
-      } else {
-        app.setLoaded();
-      }
       switch(e.which) {
       case 9:
         indent();
@@ -27,35 +21,16 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
         newLine();
         break;
       }
+      whim.app.editorContent = $("textarea").val();
     });
   });
   
-  function load(file) {
-    fs.readTextFile(file, function(result){
-      if (result.success) {
-        $("textarea").val(result.data);
-        originalTxt = $("textarea").val();
-        app.setLoaded();
-      } else if (result.err.code === "EISDIR") {
-        app.on("open", function(url){
-          location.replace(url);
-        });
-        app.openFile(app.file+"/");
-      } else {
-        alert(result.status);
-      }
-    });
-  }
-  
-  function save() {
-    originalTxt = $("textarea").val();
-    fs.writeTextFile(app.file, $("textarea").val(), function(result){
-      if (result.success) {
-        app.setSaved();
-      } else {
-        alert(result.status);
-      }
-    });
+  function load(result) {
+    if (result.success) {
+      $("textarea").val(whim.app.editorContent);
+    } else {
+      alert(result.status);
+    }
   }
   
   function newLine() {

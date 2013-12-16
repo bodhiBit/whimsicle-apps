@@ -1,21 +1,15 @@
 {
-  "editor": "aceEdit",
-  "filemanager": "fileMan",
+  "appsUrl": "../",
   "defaultApps": {
-    "txt": "textEdit",
-    "png": "browserView",
-    "gif": "browserView",
-    "jpg": "browserView",
-    "jpeg": "browserView",
-    "pdf": "browserView",
-    "m4v": "browserView",
-    "mp4": "browserView",
-    "webm": "browserView",
-    "ogv": "browserView",
-    "mp3": "browserView",
-    "ogg": "browserView"
+    "/": "fileMan",
+    ".txt": "aceEdit",
+    ".bin": "browserView"
   },
   "workspaces": {
-    "code": "[home]/code"
+    "code": "[home]/code",
+    "htdocs": "[home]/htdocs"
+  },
+  "servers": {
+    "[htdocs]": "http://localhost:9000"
   }
 }

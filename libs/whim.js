@@ -222,7 +222,7 @@ var whim = (function(){
         if (event.ctrlKey) {
           switch (event.which) {
           case 82: // R
-            location.reload(true);
+            whim.app.reload();
             event.preventDefault();
             break;
           case 83: // S
@@ -297,6 +297,17 @@ var whim = (function(){
         });
       },
       
+      ifSaved: function(allow, deny) {
+        if (this.contentModified) {
+          if (confirm("There are unsaved changes!\nDiscard?")) {
+            allow();
+          } else {
+            deny && deny();
+          }
+        } else {
+          allow();
+        }
+      },
       on: function(command, cb){
         this["on"+command.toLowerCase()] = cb;
         if (command.toLowerCase() === "loaded") {
@@ -308,6 +319,11 @@ var whim = (function(){
             urls[i] && this.open(window.unescape(urls[i]));
           }
         }
+      },
+      reload: function() {
+        this.ifSaved(function() {
+          location.reload(true);
+        });
       },
       load: function(path, cb) {
         if (this.onload) {
@@ -379,24 +395,17 @@ var whim = (function(){
         }
       },
       quit: function(cb) {
-        if (this.contentModified) {
-          if (confirm("There are unsaved changes!\nDiscard?")) {
-            whim.postToParent({
-              intent: "close",
-              url: location
-            }, cb);
-          } else {
-            cb({
-              success: false,
-              status: "canceled"
-            });
-          }
-        } else {
+        this.ifSaved(function() {
           whim.postToParent({
             intent: "close",
             url: location
           }, cb);
-        }
+        }, function() {
+          cb({
+            success: false,
+            status: "canceled"
+          });
+        });
       },
       open: function(url, cb) {
         if (url.substr(0,1) === "/" || url.substr(0,1) === "[") {
@@ -456,22 +465,16 @@ var whim = (function(){
         }
       },
       closeAll: function(cb) {
-        if (this.contentModified) {
-          if (confirm("There are unsaved changes!\nDiscard?")) {
-            whim.postToChildren({
-              intent: "quit"
-            }, cb);
-          } else {
-            cb({
-              success: false,
-              status: "canceled"
-            });
-          }
-        } else {
+        this.ifSaved(function() {
           whim.postToChildren({
             intent: "quit"
           }, cb);
-        }
+        }, function() {
+          cb({
+            success: false,
+            status: "canceled"
+          });
+        });
       },
       preview: function() {
         var url;

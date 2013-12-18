@@ -1,0 +1,32 @@
+/* --- RESET --- */
+* {
+  color: inherit;
+  font-size: inherit;
+  margin: 0;
+  padding: 0;
+}
+html {
+  background-color: #fff;
+  color: #000;
+  font-family: sans-serif;
+  font-size: 20px;
+}
+body {
+  height: 100%;
+}
+#wrapper {
+  margin: auto;
+  max-width: 960px;
+  position: relative;
+}
+main {
+  display: block;
+}
+ul, ol, li {
+  list-style: none;
+}
+img {
+  border: none;
+}
+
+/* --- END OF RESET --- */

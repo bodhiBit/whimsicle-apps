@@ -13,12 +13,28 @@ maxerr:50, newcap:true, browser:true, jquery:true */
       }
     }, 1000);
     whim.app.startFileWatcher();
+    
+    listBoilerplate();
     $("#newFolderBtn").click(newFolder);
     $("#newFileBtn").click(newFile);
-    $("#closeBtn").click(function(){
-      whim.app.quit();
-    });
+    $("#boilerSelect").change(boilerSelect);
   });
+  
+  function listBoilerplate() {
+    whim.fs.read("[apps]/boilerplate", ["-isDir", "extName", "lowerCaseName"],
+        function(result) {
+          if (result.success) {
+            for (var i = 0; i < result.entries.length; i++) {
+              var entry = result.entries[i];
+              var el = document.createElement("option");
+              el.setAttribute("value", entry.name);
+              el.textContent = entry.name;
+              $("#boilerSelect").append(el);
+            }
+          }
+        }
+    );
+  }
   
   function load(result) {
     var dir = whim.app.filePath;
@@ -64,6 +80,21 @@ maxerr:50, newcap:true, browser:true, jquery:true */
         }
       });
     }
+  }
+  
+  function boilerSelect() {
+    var src = $("#boilerSelect").val();
+    var name = prompt("File name", src);
+    if (name) {
+      whim.fs.copy("[apps]/boilerplate/"+src, whim.app.filePath+name, function(r){
+        if (r.success) {
+          whim.app.load(whim.app.filePath);
+        } else {
+          alert(r.status);
+        }
+      });
+    }
+    $("#boilerSelect").val("");
   }
   
   window.doRename = function(path) {

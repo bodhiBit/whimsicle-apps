@@ -61,7 +61,7 @@ maxerr:50, newcap:true, browser:true, jquery:true */
     } else {
       dblClick = path;
       whim.fs.read(path, ["-isDir", "extName", "lowerCaseName"], function(r) {
-        if (r.success) {
+        if (r.entries) {
           var html = $("#branch_"+getBranch(path)).html() + "<ul>";
           var props, file;
           if (path === "/") {

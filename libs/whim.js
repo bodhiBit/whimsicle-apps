@@ -31,15 +31,16 @@ var whim = (function(){
     }
   };
   Config.prototype.set = function(key, value) {
+    var _this = this;
     if (this._config) {
       this._saved = false;
       this._config[key] = value;
       if (!this._saveTimeout) {
         this._saveTimeout = setTimeout(function() {
-          this._saveTimeout = null;
-          whim.fs.write(this._configFile, JSON.stringify(this._config, null, 2), "utf8", function(result) {
+          _this._saveTimeout = null;
+          whim.fs.write(_this._configFile, JSON.stringify(_this._config, null, 2), "utf8", function(result) {
             if (result.success) {
-              this._saved = true;
+              _this._saved = true;
             }
           });
         }, 1000);

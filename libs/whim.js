@@ -217,6 +217,7 @@ var whim = (function(){
           this.icon = document.querySelector('link[rel="icon"]').href;
         }
         this.config = new Config("[apps]/"+this.name+"/config.json");
+        this._fileStates = new Config("[apps]/"+this.name+"/filestates.json");
         window.addEventListener("keydown", this._keydown);
       },
       _keydown: function(event) {
@@ -310,9 +311,12 @@ var whim = (function(){
         }
       },
       on: function(command, cb){
+        var _this = this;
         this["on"+command.toLowerCase()] = cb;
         if (command.toLowerCase() === "loaded") {
-          this.load(window.unescape(location.hash.substr(1)));
+          this._fileStates.load(function() {
+            _this.load(window.unescape(location.hash.substr(1)));
+          });
         }
         if (command.toLowerCase() === "open") {
           var urls = location.hash.substr(1).split("#");
@@ -336,6 +340,8 @@ var whim = (function(){
         if (this.filePath) {
           this._fileContent = null;
           this._editorContent = null;
+          this.fileState = this._fileStates.get(this.filePath) || {"updated":null};
+          this.fileState.updated = new Date(this.fileState.updated);
           whim.fs.read(this.filePath, this.fileEncoding, function(result) {
             if (typeof result.data === "string") {
               whim.app._fileContent = result.data;
@@ -364,14 +370,19 @@ var whim = (function(){
         }
       },
       save: function(path, cb) {
+        var _this = this;
         if (this.onsave) {
           this.onsave(path || this.filePath);
+          this._fileStates.load(function() {
+            _this._fileStates.set(_this.filePath, _this.fileState);
+          });
         }
         if (path) {
           this._filePath = path;
         }
         if (this.filePath) {
           var data = this.editorContent;
+          this.fileState.updated = new Date();
           whim.fs.write(this.filePath, data, this.fileEncoding, function(result) {
             if (result.success) {
               whim.app._fileContent = data;

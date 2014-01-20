@@ -17,7 +17,7 @@ maxerr:50, newcap:true, browser:true */
       enableBasicAutocompletion: true,
       enableSnippets: true
     });
-    editor.setTheme("ace/theme/monokai");
+    editor.setTheme("ace/theme/ambiance");
     editor.setShowInvisibles(false);
     editor.getSession().setUseSoftTabs(true);
     editor.getSession().setTabSize(2);
@@ -34,6 +34,7 @@ maxerr:50, newcap:true, browser:true */
       whim.app.editorContent = editor.getValue();
     });
     whim.app.on("loaded", load);
+    whim.app.on("save", saveState);
     whim.app.startFileWatcher();
   }
   document.addEventListener("DOMContentLoaded", main);
@@ -42,11 +43,42 @@ maxerr:50, newcap:true, browser:true */
     editor.getSession().setMode(modelist.getModeForPath(whim.app.filePath).mode);
     editor.setValue(whim.app.editorContent);
     editor.navigateFileStart();
-    if (undoFile !== whim.app.filePath) {
-      setTimeout(function() {
+    setTimeout(function() {
+      applyFolds(whim.app.fileState.foldedLines);
+      if (undoFile !== whim.app.filePath) {
         editor.getSession().getUndoManager().reset();
-      }, 10);
-      undoFile = whim.app.filePath;
+        undoFile = whim.app.filePath;
+      }
+    }, 10);
+  }
+  
+  function saveState() {
+    whim.app.fileState.foldedLines = getFoldedLines();
+  }
+  
+  function getFoldedLines(folds) {
+    var foldLines = [];
+    if (!folds) {
+      folds = editor.getSession().getAllFolds();
+    }
+    for (var i = 0; i < folds.length; i++) {
+      foldLines.push(folds[i].start.row);
+      if (folds[i].subFolds.length > 0) {
+        var subFoldLines = getFoldedLines(folds[i].subFolds);
+        for (var j = 0; j < subFoldLines.length; j++) {
+          foldLines.push(subFoldLines[j]+folds[i].start.row);
+        }
+      }
+    }
+    console.log(foldLines);
+    return foldLines;
+  }
+  
+  function applyFolds(foldLines) {
+    for (var i = 0; i < foldLines.length; i++) {
+      var row = foldLines[i],
+          range = editor.getSession().getFoldWidgetRange(row, true);
+      editor.getSession().addFold("...", range);
     }
   }
 }());

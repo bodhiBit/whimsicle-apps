@@ -41,7 +41,7 @@ maxerr:50, newcap:true, browser:true */
   
   function load(result) {
     editor.getSession().setMode(modelist.getModeForPath(whim.app.filePath).mode);
-    editor.setValue(whim.app.editorContent);
+    editor.setValue(whim.app.editorContent.replace(/\r\n/g, "\n"));
     editor.navigateFileStart();
     setTimeout(function() {
       applyFolds(whim.app.fileState.foldedLines);

@@ -112,7 +112,8 @@ var whim = (function(){
       }
       event.source && event.source.postMessage(JSON.stringify(_data), "*");
     },
-    _postRequest: function(frame, data, cb) {
+    
+    postRequest: function(frame, data, cb) {
       if (cb) {
         var cbId = 0;
         while (this._callbacks[cbId]) {
@@ -134,12 +135,11 @@ var whim = (function(){
       delete data.status;
       frame.postMessage(JSON.stringify(data), "*");
     },
-    
     sysRequest: function(data, cb) {
-      return this._postRequest(window.top, data, cb);
+      return this.postRequest(window.top, data, cb);
     },
     postToParent: function(data, cb) {
-      return this._postRequest(window.parent, data, cb);
+      return this.postRequest(window.parent, data, cb);
     },
     postToChildren: function(data, cb) {
       var frames = document.querySelectorAll("iframe"),
@@ -170,7 +170,7 @@ var whim = (function(){
           }
         };
         for(var i=0;i<frames.length;i++) {
-          this._postRequest(frames[i], data, each);
+          this.postRequest(frames[i], data, each);
         }
       }
     },

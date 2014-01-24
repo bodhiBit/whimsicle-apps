@@ -315,6 +315,7 @@ var whim = (function(){
         }
         if (command.toLowerCase() === "open") {
           var urls = location.hash.substr(1).split("#");
+          this.editorContent = 0;
           for (var i = 0; i < urls.length; i++) {
             urls[i] && this.open(window.unescape(urls[i]));
           }

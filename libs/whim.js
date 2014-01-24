@@ -490,27 +490,31 @@ var whim = (function(){
       },
       preview: function() {
         var url;
-        whim.config.load(function() {
-          for(var server in whim.config.get("servers")) {
-            if (whim.config.get("servers").hasOwnProperty(server)) {
-              if (whim.app.filePath.substr(0, server.length) === server) {
-                url = whim.config.get("servers")[server] + whim.app.filePath.substr(server.length);
+        this.save(null, function() {
+          whim.config.load(function() {
+            for(var server in whim.config.get("servers")) {
+              if (whim.config.get("servers").hasOwnProperty(server)) {
+                if (whim.app.filePath.substr(0, server.length) === server) {
+                  url = whim.config.get("servers")[server] + whim.app.filePath.substr(server.length);
+                }
               }
             }
-          }
-          if (url) {
-            whim.os.open(url);
-          } else {
-            whim.fs.probe(whim.app.filePath, function(result) {
-              if (result.properties && result.properties.url) {
-                whim.os.open(result.properties.url);
-              }
-            });
-          }
+            if (url) {
+              whim.os.open(url);
+            } else {
+              whim.fs.probe(whim.app.filePath, function(result) {
+                if (result.properties && result.properties.url) {
+                  whim.os.open(result.properties.url);
+                }
+              });
+            }
+          });
         });
       },
       start: function() {
-        whim.os.open(whim.app.filePath);
+        this.save(null, function() {
+          whim.os.open(whim.app.filePath);
+        });
       },
       startFileWatcher: function(interval) {
         this.stopFileWatcher();

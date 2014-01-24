@@ -411,7 +411,7 @@ var whim = (function(){
       open: function(url, cb) {
         if (url.substr(0,1) === "/" || url.substr(0,1) === "[") {
           return this.openPath(url, cb);
-        } else if (url.indexOf("@")>0 && url.indexOf("/")>url.indexOf("@")) {
+        } else if (url.indexOf("@")>0 && (url+"/").indexOf("/")>url.indexOf("@")) {
           var app = url.substr(0, url.indexOf("@"));
           var path = url.substr(url.indexOf("@")+1);
           return this.openPathWith(path, app, cb);

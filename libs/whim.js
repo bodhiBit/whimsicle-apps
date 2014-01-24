@@ -112,7 +112,8 @@ var whim = (function(){
       }
       event.source && event.source.postMessage(JSON.stringify(_data), "*");
     },
-    _postRequest: function(frame, data, cb) {
+    
+    postRequest: function(frame, data, cb) {
       if (cb) {
         var cbId = 0;
         while (this._callbacks[cbId]) {
@@ -134,12 +135,11 @@ var whim = (function(){
       delete data.status;
       frame.postMessage(JSON.stringify(data), "*");
     },
-    
     sysRequest: function(data, cb) {
-      return this._postRequest(window.top, data, cb);
+      return this.postRequest(window.top, data, cb);
     },
     postToParent: function(data, cb) {
-      return this._postRequest(window.parent, data, cb);
+      return this.postRequest(window.parent, data, cb);
     },
     postToChildren: function(data, cb) {
       var frames = document.querySelectorAll("iframe"),
@@ -170,7 +170,7 @@ var whim = (function(){
           }
         };
         for(var i=0;i<frames.length;i++) {
-          this._postRequest(frames[i], data, each);
+          this.postRequest(frames[i], data, each);
         }
       }
     },
@@ -315,6 +315,7 @@ var whim = (function(){
         }
         if (command.toLowerCase() === "open") {
           var urls = location.hash.substr(1).split("#");
+          this.editorContent = 0;
           for (var i = 0; i < urls.length; i++) {
             urls[i] && this.open(window.unescape(urls[i]));
           }
@@ -410,7 +411,7 @@ var whim = (function(){
       open: function(url, cb) {
         if (url.substr(0,1) === "/" || url.substr(0,1) === "[") {
           return this.openPath(url, cb);
-        } else if (url.indexOf("@")>0 && url.indexOf("/")>url.indexOf("@")) {
+        } else if (url.indexOf("@")>0 && (url+"/").indexOf("/")>url.indexOf("@")) {
           var app = url.substr(0, url.indexOf("@"));
           var path = url.substr(url.indexOf("@")+1);
           return this.openPathWith(path, app, cb);

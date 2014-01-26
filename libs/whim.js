@@ -239,11 +239,11 @@ var whim = (function(){
         } else {
           switch (event.which) {
           case 116: // F5
-            whim.app.preview();
+            whim.app.preview(event.shiftKey);
             event.preventDefault();
             break;
           case 117: // F6
-            whim.app.start();
+            whim.app.start(event.shiftKey);
             event.preventDefault();
             break;
           }
@@ -489,7 +489,7 @@ var whim = (function(){
           });
         });
       },
-      preview: function() {
+      preview: function(appOpen) {
         var url;
         this.save(null, function() {
           whim.config.load(function() {
@@ -501,20 +501,20 @@ var whim = (function(){
               }
             }
             if (url) {
-              whim.os.open(url);
+              appOpen ? whim.app.open(url) : whim.os.open(url);
             } else {
               whim.fs.probe(whim.app.filePath, function(result) {
                 if (result.properties && result.properties.url) {
-                  whim.os.open(result.properties.url);
+                  appOpen ? whim.app.open(result.properties.url) : whim.os.open(result.properties.url);
                 }
               });
             }
           });
         });
       },
-      start: function() {
+      start: function(appOpen) {
         this.save(null, function() {
-          whim.os.open(whim.app.filePath);
+          appOpen ? whim.app.open(whim.app.filePath) : whim.os.open(whim.app.filePath);
         });
       },
       startFileWatcher: function(interval) {

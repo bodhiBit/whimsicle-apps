@@ -18,10 +18,17 @@ maxerr:50, newcap:true, browser:true */
       enableSnippets: true
     });
     editor.setTheme("ace/theme/ambiance");
-    editor.setShowInvisibles(false);
+    editor.setShowInvisibles(true);
     editor.getSession().setUseSoftTabs(true);
     editor.getSession().setTabSize(2);
-    
+
+    editor.commands.addCommand({
+      name: 'toggleSoftTabs',
+      bindKey: {win: 'Ctrl-I',  mac: 'Command-I'},
+      exec: toggleSoftTabs,
+      readOnly: false
+    });
+
     // insistant autocomplete
     document.getElementById("editor").addEventListener("keydown", function(e) {
       if (editor.completer && !(e.altGraphKey||e.altKey||e.ctrlKey||e.metaKey)
@@ -44,6 +51,7 @@ maxerr:50, newcap:true, browser:true */
     editor.setValue(whim.app.editorContent.replace(/\r\n/g, "\n"));
     editor.navigateFileStart();
     setTimeout(function() {
+      detectIndentation();
       applyFolds(whim.app.fileState.foldedLines);
       if (undoFile !== whim.app.filePath) {
         editor.getSession().getUndoManager().reset();
@@ -80,5 +88,63 @@ maxerr:50, newcap:true, browser:true */
           range = editor.getSession().getFoldWidgetRange(row, true);
       editor.getSession().addFold("...", range);
     }
+  }
+  
+  function detectIndentation() {
+    var text = editor.getValue(),
+        indentation = "\n  ",
+        firstIndentation = text.indexOf(indentation),
+        tabSize = 1;
+    
+    if (text.indexOf("\n\t") > -1) {
+      editor.getSession().setUseSoftTabs(false);
+    } else if (firstIndentation > -1) {
+      while(firstIndentation === text.indexOf(indentation)) {
+        tabSize++;
+        indentation += " ";
+      }
+      editor.getSession().setUseSoftTabs(true);
+      editor.getSession().setTabSize(tabSize);
+    }
+  }
+  
+  function toggleSoftTabs(editor) {
+    var text = editor.getValue(),
+        indentation,
+        tabSize = editor.getSession().getTabSize(),
+        match = "\\n",
+        replace = "\n",
+        softTab = "";
+    
+    for (var i = 0; i < tabSize; i++) {
+      softTab += " ";
+    }
+    if (editor.getSession().getUseSoftTabs()) {
+      while(text.match(new RegExp(match))) {
+        match += softTab;
+        replace += "\t";
+      }
+      while(replace.length > 1) {
+        text = text.replace(new RegExp(match, "g"), replace);
+        match = match.substr(0, match.length-tabSize);
+        replace = replace.substr(0, replace.length-1);
+        console.log(">"+replace+"<");
+      }
+      editor.getSession().setUseSoftTabs(false);
+    } else {
+      while(text.match(new RegExp(match))) {
+        match += "\\t";
+        replace += softTab;
+      }
+      while(replace.length > 1) {
+        text = text.replace(new RegExp(match, "g"), replace);
+        match = match.substr(0, match.length-2);
+        replace = replace.substr(0, replace.length-tabSize);
+        console.log(">"+replace+"<");
+      }
+      editor.getSession().setUseSoftTabs(true);
+    }
+    editor.setValue(text);
+    editor.navigateFileStart();
   }
 }());

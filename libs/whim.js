@@ -31,15 +31,16 @@ var whim = (function(){
     }
   };
   Config.prototype.set = function(key, value) {
+    var _this = this;
     if (this._config) {
       this._saved = false;
       this._config[key] = value;
       if (!this._saveTimeout) {
         this._saveTimeout = setTimeout(function() {
-          this._saveTimeout = null;
-          whim.fs.write(this._configFile, JSON.stringify(this._config, null, 2), "utf8", function(result) {
+          _this._saveTimeout = null;
+          whim.fs.write(_this._configFile, JSON.stringify(_this._config, null, 2), "utf8", function(result) {
             if (result.success) {
-              this._saved = true;
+              _this._saved = true;
             }
           });
         }, 1000);
@@ -216,6 +217,7 @@ var whim = (function(){
           this.icon = document.querySelector('link[rel="icon"]').href;
         }
         this.config = new Config("[apps]/"+this.name+"/config.json");
+        this._fileStates = new Config("[apps]/"+this.name+"/filestates.json");
         window.addEventListener("keydown", this._keydown);
       },
       _keydown: function(event) {
@@ -237,11 +239,11 @@ var whim = (function(){
         } else {
           switch (event.which) {
           case 116: // F5
-            whim.app.preview();
+            whim.app.preview(event.shiftKey);
             event.preventDefault();
             break;
           case 117: // F6
-            whim.app.start();
+            whim.app.start(event.shiftKey);
             event.preventDefault();
             break;
           }
@@ -309,9 +311,12 @@ var whim = (function(){
         }
       },
       on: function(command, cb){
+        var _this = this;
         this["on"+command.toLowerCase()] = cb;
         if (command.toLowerCase() === "loaded") {
-          this.load(window.unescape(location.hash.substr(1)));
+          this._fileStates.load(function() {
+            _this.load(window.unescape(location.hash.substr(1)));
+          });
         }
         if (command.toLowerCase() === "open") {
           var urls = location.hash.substr(1).split("#");
@@ -336,6 +341,8 @@ var whim = (function(){
         if (this.filePath) {
           this._fileContent = null;
           this._editorContent = null;
+          this.fileState = this._fileStates.get(this.filePath) || {"updated":null};
+          this.fileState.updated = new Date(this.fileState.updated);
           whim.fs.read(this.filePath, this.fileEncoding, function(result) {
             if (typeof result.data === "string") {
               whim.app._fileContent = result.data;
@@ -364,14 +371,19 @@ var whim = (function(){
         }
       },
       save: function(path, cb) {
+        var _this = this;
         if (this.onsave) {
           this.onsave(path || this.filePath);
+          this._fileStates.load(function() {
+            _this._fileStates.set(_this.filePath, _this.fileState);
+          });
         }
         if (path) {
           this._filePath = path;
         }
         if (this.filePath) {
           var data = this.editorContent;
+          this.fileState.updated = new Date();
           whim.fs.write(this.filePath, data, this.fileEncoding, function(result) {
             if (result.success) {
               whim.app._fileContent = data;
@@ -477,29 +489,33 @@ var whim = (function(){
           });
         });
       },
-      preview: function() {
+      preview: function(appOpen) {
         var url;
-        whim.config.load(function() {
-          for(var server in whim.config.get("servers")) {
-            if (whim.config.get("servers").hasOwnProperty(server)) {
-              if (whim.app.filePath.substr(0, server.length) === server) {
-                url = whim.config.get("servers")[server] + whim.app.filePath.substr(server.length);
+        this.save(null, function() {
+          whim.config.load(function() {
+            for(var server in whim.config.get("servers")) {
+              if (whim.config.get("servers").hasOwnProperty(server)) {
+                if (whim.app.filePath.substr(0, server.length) === server) {
+                  url = whim.config.get("servers")[server] + whim.app.filePath.substr(server.length);
+                }
               }
             }
-          }
-          if (url) {
-            whim.os.open(url);
-          } else {
-            whim.fs.probe(whim.app.filePath, function(result) {
-              if (result.properties && result.properties.url) {
-                whim.os.open(result.properties.url);
-              }
-            });
-          }
+            if (url) {
+              appOpen ? whim.app.open(url) : whim.os.open(url);
+            } else {
+              whim.fs.probe(whim.app.filePath, function(result) {
+                if (result.properties && result.properties.url) {
+                  appOpen ? whim.app.open(result.properties.url) : whim.os.open(result.properties.url);
+                }
+              });
+            }
+          });
         });
       },
-      start: function() {
-        whim.os.open(whim.app.filePath);
+      start: function(appOpen) {
+        this.save(null, function() {
+          appOpen ? whim.app.open(whim.app.filePath) : whim.os.open(whim.app.filePath);
+        });
       },
       startFileWatcher: function(interval) {
         this.stopFileWatcher();

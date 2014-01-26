@@ -1,16 +1,16 @@
 /*jshint forin:true, noarg:true, noempty:true, eqeqeq:true, bitwise:true, strict:true,
-undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:true, browser:true, jquery: true */
-/*global fs, describe, it, runs, waitsFor, expect, jasmine*/
+undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:true, browser:true, jquery:true */
+/*global whim, describe, it, runs, waitsFor, expect, jasmine*/
 (function(){
   "use strict";
-  describe("fs.js", function(){
+  describe("whim.fs", function(){
     var done, result;
     var testfolder = "[code]/test" + Math.random();
     
     it("can list root", function(){
       runs(function(){
         done = false;
-        fs.listDir("/", function(r){
+        whim.fs.read("/", ["name"], function(r){
           result = r;
           done = true;
         });
@@ -28,7 +28,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("cannot write to root", function(){
       runs(function(){
         done = false;
-        fs.makeDir("/", function(r){
+        whim.fs.write("/", null, null, function(r){
           result = r;
           done = true;
         });
@@ -46,7 +46,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can create a folder", function(){
       runs(function(){
         done = false;
-        fs.makeDir(testfolder, function(r){
+        whim.fs.write(testfolder, null, null, function(r){
           result = r;
           done = true;
         });
@@ -63,7 +63,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can delete a folder", function(){
       runs(function(){
         done = false;
-        fs.removeDir(testfolder, function(r){
+        whim.fs.delete(testfolder, function(r){
           result = r;
           done = true;
         });
@@ -81,7 +81,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can create folders recursively", function(){
       runs(function(){
         done = false;
-        fs.makeDir(testfolder+"/this/is/a/very/long/path", function(r){
+        whim.fs.write(testfolder+"/this/is/a/very/long/path", null, null, function(r){
           result = r;
           done = true;
         });
@@ -99,7 +99,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can write to a file", function(){
       runs(function(){
         done = false;
-        fs.writeTextFile(testfolder+"/test.txt", "Små søde jordbær", function(r){
+        whim.fs.write(testfolder+"/test.txt", "Små søde jordbær", "utf8", function(r){
           result = r;
           done = true;
         });
@@ -116,7 +116,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can read from a file", function(){
       runs(function(){
         done = false;
-        fs.readTextFile(testfolder+"/test.txt", function(r){
+        whim.fs.read(testfolder+"/test.txt", "utf8", function(r){
           result = r;
           done = true;
         });
@@ -134,7 +134,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can get properties from a file", function(){
       runs(function(){
         done = false;
-        fs.getProps(testfolder+"/test.txt", function(r){
+        whim.fs.probe(testfolder+"/test.txt", function(r){
           result = r;
           done = true;
         });
@@ -146,26 +146,26 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
       
       runs(function(){
         expect(result.success).toBe(true);
-        expect(result.props.name).toBe("test.txt");
-        expect(result.props.isFile).toBe(true);
-        expect(result.props.isDir).toBe(false);
-        expect(result.props.isLink).toBe(false);
-        expect(result.props.size).toEqual(jasmine.any(Number));
-        expect(result.props.atime).toEqual(jasmine.any(Date));
-        expect(result.props.ctime).toEqual(jasmine.any(Date));
-        expect(result.props.mtime).toEqual(jasmine.any(Date));
+        expect(result.properties.name).toBe("test.txt");
+        expect(result.properties.isFile).toBe(true);
+        expect(result.properties.isDir).toBe(false);
+        expect(result.properties.isLink).toBe(false);
+        expect(result.properties.size).toEqual(jasmine.any(Number));
+        expect(result.properties.atime).toEqual(jasmine.any(Date));
+        expect(result.properties.ctime).toEqual(jasmine.any(Date));
+        expect(result.properties.mtime).toEqual(jasmine.any(Date));
       });
     });
     
     it("can list entries from a folder in specified order", function(){
       var setup = 6;
       runs(function(){
-        fs.makeDir(testfolder+"/carol", function(){ setup--; });
-        fs.makeDir(testfolder+"/bob", function(){ setup--; });
-        fs.writeTextFile(testfolder+"/bob.txt",   "the builder..", function(){ setup--; });
-        fs.writeTextFile(testfolder+"/alice.txt", "in wonderland!", function(){ setup--; });
-        fs.makeDir(testfolder+"/alice", function(){ setup--; });
-        fs.writeTextFile(testfolder+"/carol.txt", "I am but a fool...", function(){ setup--; });
+        whim.fs.write(testfolder+"/carol", null, null, function(){ setup--; });
+        whim.fs.write(testfolder+"/bob", null, null, function(){ setup--; });
+        whim.fs.write(testfolder+"/bob.txt",   "the builder..", "utf8", function(){ setup--; });
+        whim.fs.write(testfolder+"/alice.txt", "in wonderland!", "utf8", function(){ setup--; });
+        whim.fs.write(testfolder+"/alice", null, null, function(){ setup--; });
+        whim.fs.write(testfolder+"/carol.txt", "I am but a fool...", "utf8", function(){ setup--; });
       });
       
       waitsFor(function(){
@@ -174,7 +174,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
       
       runs(function(){
         done = false;
-        fs.listDir(testfolder, ["-isDir", "name"], function(r){
+        whim.fs.read(testfolder, ["-isDir", "name"], function(r){
           result = r;
           done = true;
         });
@@ -200,7 +200,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("cannot list entries from a non-existent folder", function(){
       runs(function(){
         done = false;
-        fs.listDir(testfolder+"/jabberwocky", ["-isDir", "name"], function(r){
+        whim.fs.read(testfolder+"/jabberwocky", ["-isDir", "name"], function(r){
           result = r;
           done = true;
         });
@@ -218,11 +218,11 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can rename a file", function(){
       runs(function(){
         done = false;
-        fs.rename(testfolder+"/test.txt", "this/is/sparta.txt", function(r){
+        whim.fs.rename(testfolder+"/test.txt", testfolder+"/this/is/sparta.txt", function(r){
           if (r.success) {
-            fs.getProps(testfolder+"/this/is/sparta.txt", function(r){
-              if (r.success && r.props.isFile) {
-                fs.getProps(testfolder+"/test.txt", function(r){
+            whim.fs.probe(testfolder+"/this/is/sparta.txt", function(r){
+              if (r.success && r.properties.isFile) {
+                whim.fs.probe(testfolder+"/test.txt", function(r){
                   result = r;
                   done = true;
                 });
@@ -243,11 +243,11 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can rename a folder", function(){
       runs(function(){
         done = false;
-        fs.rename(testfolder+"/this", "that", function(r){
+        whim.fs.rename(testfolder+"/this", testfolder+"/that", function(r){
           if (r.success) {
-            fs.getProps(testfolder+"/that", function(r){
-              if (r.success && r.props.isDir) {
-                fs.getProps(testfolder+"/this", function(r){
+            whim.fs.probe(testfolder+"/that", function(r){
+              if (r.success && r.properties.isDir) {
+                whim.fs.probe(testfolder+"/this", function(r){
                   result = r;
                   done = true;
                 });
@@ -269,11 +269,11 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can copy a file", function(){
       runs(function(){
         done = false;
-        fs.copy(testfolder+"/that/is/sparta.txt", "../../test.txt", function(r){
+        whim.fs.copy(testfolder+"/that/is/sparta.txt", testfolder+"/test.txt", function(r){
           if (r.success) {
-            fs.getProps(testfolder+"/that/is/sparta.txt", function(r){
-              if (r.success && r.props.isFile) {
-                fs.readTextFile(testfolder+"/test.txt", function(r){
+            whim.fs.probe(testfolder+"/that/is/sparta.txt", function(r){
+              if (r.success && r.properties.isFile) {
+                whim.fs.read(testfolder+"/test.txt", "utf8", function(r){
                   result = r;
                   done = true;
                 });
@@ -295,11 +295,11 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can copy a folder", function(){
       runs(function(){
         done = false;
-        fs.copy(testfolder+"/that", "this", function(r){
+        whim.fs.copy(testfolder+"/that", testfolder+"/this", function(r){
           if (r.success) {
-            fs.getProps(testfolder+"/that", function(r){
-              if (r.success && r.props.isDir) {
-                fs.getProps(testfolder+"/this", function(r){
+            whim.fs.probe(testfolder+"/that", function(r){
+              if (r.success && r.properties.isDir) {
+                whim.fs.probe(testfolder+"/this", function(r){
                   result = r;
                   done = true;
                 });
@@ -315,14 +315,14 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
       
       runs(function(){
         expect(result.success).toBe(true);
-        expect(result.props.isDir).toBe(true);
+        expect(result.properties.isDir).toBe(true);
       });
     });
     
     it("can delete a file", function(){
       runs(function(){
         done = false;
-        fs.deleteFile(testfolder+"/that/is/sparta.txt", function(r){
+        whim.fs.delete(testfolder+"/that/is/sparta.txt", function(r){
           result = r;
           done = true;
         });
@@ -340,7 +340,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can delete a non-existent file", function(){
       runs(function(){
         done = false;
-        fs.deleteFile(testfolder+"/that/is/sparta.txt", function(r){
+        whim.fs.delete(testfolder+"/that/is/sparta.txt", function(r){
           result = r;
           done = true;
         });
@@ -359,10 +359,10 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can delete a folder recursively", function(){
       runs(function(){
         done = false;
-        fs.writeTextFile(testfolder+"/test2.txt", "Små søde jordbær", function(){
-          fs.writeTextFile(testfolder+"/this/is/a/file.txt", "Små søde jordbær", function(){
-            fs.makeDir(testfolder+"/this/is/a/very/unusually/long/name/for/a/path", function(){
-              fs.removeDir(testfolder, function(r){
+        whim.fs.write(testfolder+"/test2.txt", "Små søde jordbær", "utf8", function(){
+          whim.fs.write(testfolder+"/this/is/a/file.txt", "Små søde jordbær", "utf8", function(){
+            whim.fs.write(testfolder+"/this/is/a/very/unusually/long/name/for/a/path", null, null, function(){
+              whim.fs.delete(testfolder, function(r){
                 result = r;
                 done = true;
               });
@@ -383,7 +383,7 @@ undef:true, unused:true, curly:true, devel:true, indent:2, maxerr:50, newcap:tru
     it("can delete a non-existent folder", function(){
       runs(function(){
         done = false;
-        fs.removeDir(testfolder, function(r){
+        whim.fs.delete(testfolder, function(r){
           result = r;
           done = true;
         });
